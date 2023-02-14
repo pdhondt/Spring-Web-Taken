@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Film</title>
+    <script src="js/film.js" type="module" defer></script>
+    <link rel="icon" href="images/cinefest.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/cinefest.css">
+</head>
+<body>
+  <div><a href="index.html">Menu</a></div>
+  <h1>Film</h1>
+    <label>Id:
+      <span id="zoekIdFout" class="fout" hidden>Verplicht positief getal.</span>
+      <input id="zoekId" required type="number" min="1" autofocus>
+    </label>
+    <button id="zoek">Zoek</button>
+    <div id="film" hidden>
+      <dl>
+        <dt>Titel:</dt>
+        <dd id="titel"></dd>
+        <dt>Jaar:</dt>
+        <dd id="jaar"></dd>
+        <dt>Vrije plaatsen:</dt>
+        <dd id="vrijePlaatsen"></dd>
+      </dl>
+    </div>
+    <div id="nietGevonden" class="fout" hidden>Pizza niet gevonden.</div>
+    <div id="storing" class="fout" hidden>Storing, contacteer helpdesk.</div>
+</body>
+</html>

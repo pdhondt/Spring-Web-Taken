@@ -39,4 +39,11 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                 .andExpect(
                         status().isNotFound());
     }
+    @Test
+    void findAll() throws Exception {
+        mockMvc.perform(get("/films"))
+                .andExpectAll(
+                        status().isOk(),
+                        jsonPath("length()").value(countRowsInTable(FILMS)));
+    }
 }

@@ -48,4 +48,13 @@ public class FilmRepository {
                 """;
         return template.query(sql, filmMapper);
     }
+    public List<Film> findByJaar(int jaar) {
+        var sql = """
+                select id, titel, jaar, vrijePlaatsen, aankoopprijs
+                from films
+                where jaar = ?
+                order by titel
+                """;
+        return template.query(sql, filmMapper, jaar);
+    }
 }

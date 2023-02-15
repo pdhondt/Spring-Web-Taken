@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Films van een jaar</title>
+    <script src="js/jaar.js" type="module" defer></script>
+    <link rel="icon" href="images/cinefest.ico" type="image/x-icon">
+    <link rel="stylesheet" href="css/cinefest.css">
+</head>
+<body>
+    <div><a href="index.html">Menu</a></div>
+    <h1>Films van een jaar</h1>
+    <label>Jaar:
+      <span id="jaarFout" class="fout" hidden>Verplicht</span>
+      <input id="jaar" required type="number" min="1" autofocus>
+    </label>
+    <button id="zoek">Zoeken</button>
+    <table id="filmsTable" hidden>
+      <thead>
+        <tr>
+          <th>id</th>
+          <th>titel</th>
+          <th>jaar</th>
+          <th>aantal tickets</th>
+        </tr>
+      </thead>
+      <tbody id="filmsBody"></tbody>
+    </table>
+    <div id="storing" class="fout" hidden>Storing, contacteer helpdesk.</div>
+</body>
+</html>

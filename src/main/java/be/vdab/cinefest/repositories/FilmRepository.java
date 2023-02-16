@@ -57,4 +57,11 @@ public class FilmRepository {
                 """;
         return template.query(sql, filmMapper, jaar);
     }
+    public void delete(long id) {
+        var sql = """
+                delete from films
+                where id = ?
+                """;
+        template.update(sql, id);
+    }
 }

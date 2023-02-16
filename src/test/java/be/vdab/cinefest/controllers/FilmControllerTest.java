@@ -10,6 +10,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 
 @SpringBootTest
 @Sql("/films.sql")
@@ -53,5 +55,12 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                         status().isOk(),
                         jsonPath("length()").value(
                                 countRowsInTableWhere(FILMS, "jaar = 1986")));
+    }
+    @Test
+    void deleteVerwijdertFilm() throws Exception {
+        var id = findIdTestFilm();
+        mockMvc.perform(delete("/films/{id}", id))
+                .andExpect(status().isOk());
+        assertThat(countRowsInTableWhere(FILMS, "id = " + id)).isZero();
     }
 }

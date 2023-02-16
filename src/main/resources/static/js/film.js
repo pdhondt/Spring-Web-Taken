@@ -37,3 +37,15 @@ async function findById(id) {
     }
 }
 
+byId("verwijder").onclick = async function () {
+    const zoekIdInput = byId("zoekId");
+    const response = await fetch(`films/${zoekIdInput.value}`, {method : "DELETE"});
+    if (response.ok) {
+        verbergFilmEnFouten();
+        zoekIdInput.value = "";
+        zoekIdInput.focus();
+    } else {
+        toon("storing");
+    }
+}
+

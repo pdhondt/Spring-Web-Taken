@@ -3,20 +3,26 @@ package be.vdab.cinefest.controllers;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit4.AbstractTransactionalJUnit4SpringContextTests;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @SpringBootTest
 @Sql("/films.sql")
 @AutoConfigureMockMvc
 class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
+    private static final Path TEST_RESOURCES = Path.of("src/test/resources");
     private final static String FILMS = "films";
     private final MockMvc mockMvc;
     FilmControllerTest(MockMvc mockMvc) {
@@ -62,5 +68,16 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
         mockMvc.perform(delete("/films/{id}", id))
                 .andExpect(status().isOk());
         assertThat(countRowsInTableWhere(FILMS, "id = " + id)).isZero();
+    }
+    @Test
+    void create() throws Exception {
+        var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteFilm.json"));
+        var responseBody = mockMvc.perform(post("/films")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonData))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(countRowsInTableWhere(FILMS,
+                "titel = 'The Hobbit' and id = " + responseBody)).isOne();
     }
 }

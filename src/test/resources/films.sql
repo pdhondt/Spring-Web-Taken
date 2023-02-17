@@ -1,2 +1,2 @@
 insert into films(titel, jaar, vrijePlaatsen, aankoopprijs)
-values ('Top Gun', 1986, 5, 450.00), ('Lord of the Rings', 2001, 8, 800.00);
+values ('testfilm1', 1986, 1, 1.1), ('testfilm2', 2001, 2, 2.2);

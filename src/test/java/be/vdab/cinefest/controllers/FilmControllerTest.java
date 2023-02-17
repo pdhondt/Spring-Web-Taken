@@ -30,18 +30,18 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
     FilmControllerTest(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
     }
-    private long findIdTestFilm() {
+    private long findIdTestFilm1() {
         return jdbcTemplate.queryForObject(
-                "select id from films where titel = 'Top Gun'", Long.class);
+                "select id from films where titel = 'testfilm1'", Long.class);
     }
     @Test
     void findById() throws Exception {
-        var id = findIdTestFilm();
+        var id = findIdTestFilm1();
         mockMvc.perform(get("/films/{id}", id))
                 .andExpectAll(
                         status().isOk(),
                         jsonPath("id").value(id),
-                        jsonPath("titel").value("Top Gun"));
+                        jsonPath("titel").value("testfilm1"));
     }
     @Test
     void findByIdGeeftNotFoundBijOnbestaandeFilm() throws Exception {
@@ -66,7 +66,7 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
     }
     @Test
     void deleteVerwijdertFilm() throws Exception {
-        var id = findIdTestFilm();
+        var id = findIdTestFilm1();
         mockMvc.perform(delete("/films/{id}", id))
                 .andExpect(status().isOk());
         assertThat(countRowsInTableWhere(FILMS, "id = " + id)).isZero();
@@ -80,7 +80,7 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         assertThat(countRowsInTableWhere(FILMS,
-                "titel = 'The Hobbit' and id = " + responseBody)).isOne();
+                "titel = 'testfilm3' and id = " + responseBody)).isOne();
     }
     @ParameterizedTest
     @ValueSource(strings = {"filmMetLegeTitel.json", "filmMetNegatiefJaar.json",

@@ -38,4 +38,8 @@ public class FilmService {
     public long create(NieuweFilm nieuweFilm) {
         return filmRepository.create(new Film(nieuweFilm.titel(), nieuweFilm.jaar(), 0, BigDecimal.ZERO));
     }
+    @Transactional
+    public void updateTitel(long id, String titel) {
+        filmRepository.updateTitel(id, titel);
+    }
 }

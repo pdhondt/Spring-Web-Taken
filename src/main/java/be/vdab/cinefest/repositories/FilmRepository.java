@@ -1,6 +1,7 @@
 package be.vdab.cinefest.repositories;
 
 import be.vdab.cinefest.domain.Film;
+import be.vdab.cinefest.exceptions.FilmNietGevondenException;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -82,5 +83,15 @@ public class FilmRepository {
             return statement;
         }, keyHolder);
         return keyHolder.getKey().longValue();
+    }
+    public void updateTitel(long id, String titel) {
+        var sql = """
+                update films
+                set titel = ?
+                where id = ?
+                """;
+        if (template.update(sql, titel, id) == 0) {
+            throw new FilmNietGevondenException(id);
+        }
     }
 }

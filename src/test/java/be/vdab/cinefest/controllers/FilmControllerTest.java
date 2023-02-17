@@ -19,6 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 @SpringBootTest
 @Sql("/films.sql")
@@ -88,6 +89,35 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
     void createMetVerkeerdeDataMislukt(String fileName) throws Exception {
         var jsonData = Files.readString(TEST_RESOURCES.resolve(fileName));
         mockMvc.perform(post("/films")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonData))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void patchWijzigtTitel() throws Exception {
+        var id = findIdTestFilm1();
+        var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteTitelWijziging.json"));
+        mockMvc.perform(patch("/films/{id}/titel", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonData))
+                .andExpect(status().isOk());
+        assertThat(countRowsInTableWhere(FILMS,
+                "titel = 'gewijzigdeTitel' and id = " + id)).isOne();
+    }
+    @Test
+    void patchVanOnbestaandeFilmMislukt() throws Exception {
+        var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteTitelWijziging.json"));
+        mockMvc.perform(patch("/films/{id}/titel", Long.MAX_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                        .andExpect(status().isNotFound());
+    }
+    @ParameterizedTest
+    @ValueSource(strings = { "titelWijzigingMetLegeTitel.json", "titelWijzigingZonderTitel.json" })
+    void patchMetFouteDataMislukt(String fileName) throws Exception {
+        var id = findIdTestFilm1();
+        var jsonData = Files.readString(TEST_RESOURCES.resolve(fileName));
+        mockMvc.perform(patch("/films/{id}/titel", id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonData))
                 .andExpect(status().isBadRequest());

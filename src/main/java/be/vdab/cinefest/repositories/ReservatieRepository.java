@@ -1,15 +1,22 @@
 package be.vdab.cinefest.repositories;
 
 import be.vdab.cinefest.domain.Reservatie;
+import be.vdab.cinefest.dto.ReservatieMetFilmTitel;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Repository
 public class ReservatieRepository {
     private final JdbcTemplate template;
+    private final RowMapper<ReservatieMetFilmTitel> reservatieMetFilmTitelMapper = (rs, rowNum) ->
+            new ReservatieMetFilmTitel(rs.getLong("id"), rs.getString("titel"),
+                    rs.getInt("plaatsen"), rs.getObject("besteld", LocalDateTime.class));
 
     public ReservatieRepository(JdbcTemplate template) {
         this.template = template;
@@ -29,5 +36,15 @@ public class ReservatieRepository {
             return statement;
         }, keyHolder);
         return keyHolder.getKey().longValue();
+    }
+    public List<ReservatieMetFilmTitel> findByEmailAdres(String emailAdres) {
+        var sql = """
+                select reservaties.id, titel, plaatsen, besteld
+                from reservaties inner join films
+                on reservaties.filmId = films.id
+                where emailAdres = ?
+                order by reservaties.id desc
+                """;
+        return template.query(sql, reservatieMetFilmTitelMapper, emailAdres);
     }
 }

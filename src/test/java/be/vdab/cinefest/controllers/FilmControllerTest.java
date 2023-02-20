@@ -13,13 +13,10 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 
 @SpringBootTest
 @Sql("/films.sql")
@@ -27,14 +24,18 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
     private static final Path TEST_RESOURCES = Path.of("src/test/resources");
     private final static String FILMS = "films";
+    private final static String RESERVATIES = "reservaties";
     private final MockMvc mockMvc;
+
     FilmControllerTest(MockMvc mockMvc) {
         this.mockMvc = mockMvc;
     }
+
     private long findIdTestFilm1() {
         return jdbcTemplate.queryForObject(
                 "select id from films where titel = 'testfilm1'", Long.class);
     }
+
     @Test
     void findById() throws Exception {
         var id = findIdTestFilm1();
@@ -44,12 +45,14 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                         jsonPath("id").value(id),
                         jsonPath("titel").value("testfilm1"));
     }
+
     @Test
     void findByIdGeeftNotFoundBijOnbestaandeFilm() throws Exception {
         mockMvc.perform(get("/films/{id}", Long.MAX_VALUE))
                 .andExpect(
                         status().isNotFound());
     }
+
     @Test
     void findAll() throws Exception {
         mockMvc.perform(get("/films"))
@@ -57,6 +60,7 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                         status().isOk(),
                         jsonPath("length()").value(countRowsInTable(FILMS)));
     }
+
     @Test
     void findByJaar() throws Exception {
         mockMvc.perform(get("/films").param("jaar", "1986"))
@@ -65,6 +69,7 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                         jsonPath("length()").value(
                                 countRowsInTableWhere(FILMS, "jaar = 1986")));
     }
+
     @Test
     void deleteVerwijdertFilm() throws Exception {
         var id = findIdTestFilm1();
@@ -72,52 +77,100 @@ class FilmControllerTest extends AbstractTransactionalJUnit4SpringContextTests {
                 .andExpect(status().isOk());
         assertThat(countRowsInTableWhere(FILMS, "id = " + id)).isZero();
     }
+
     @Test
     void create() throws Exception {
         var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteFilm.json"));
         var responseBody = mockMvc.perform(post("/films")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonData))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         assertThat(countRowsInTableWhere(FILMS,
                 "titel = 'testfilm3' and id = " + responseBody)).isOne();
     }
+
     @ParameterizedTest
     @ValueSource(strings = {"filmMetLegeTitel.json", "filmMetNegatiefJaar.json",
-    "filmZonderJaar.json", "filmZonderTitel.json"})
+            "filmZonderJaar.json", "filmZonderTitel.json"})
     void createMetVerkeerdeDataMislukt(String fileName) throws Exception {
         var jsonData = Files.readString(TEST_RESOURCES.resolve(fileName));
         mockMvc.perform(post("/films")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonData))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
                 .andExpect(status().isBadRequest());
     }
+
     @Test
     void patchWijzigtTitel() throws Exception {
         var id = findIdTestFilm1();
         var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteTitelWijziging.json"));
         mockMvc.perform(patch("/films/{id}/titel", id)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(jsonData))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
                 .andExpect(status().isOk());
         assertThat(countRowsInTableWhere(FILMS,
                 "titel = 'gewijzigdeTitel' and id = " + id)).isOne();
     }
+
     @Test
     void patchVanOnbestaandeFilmMislukt() throws Exception {
         var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteTitelWijziging.json"));
         mockMvc.perform(patch("/films/{id}/titel", Long.MAX_VALUE)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonData))
-                        .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound());
     }
+
     @ParameterizedTest
-    @ValueSource(strings = { "titelWijzigingMetLegeTitel.json", "titelWijzigingZonderTitel.json" })
+    @ValueSource(strings = {"titelWijzigingMetLegeTitel.json", "titelWijzigingZonderTitel.json"})
     void patchMetFouteDataMislukt(String fileName) throws Exception {
         var id = findIdTestFilm1();
         var jsonData = Files.readString(TEST_RESOURCES.resolve(fileName));
         mockMvc.perform(patch("/films/{id}/titel", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void correcteReservatie() throws Exception {
+        var id = findIdTestFilm1();
+        var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteReservatie.json"));
+        var responseBody = mockMvc.perform(post("/films/{id}/reservatie", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+        assertThat(countRowsInTableWhere(RESERVATIES, "emailAdres = 'test@vdab.be' and plaatsen = 1" +
+                " and id = " + responseBody)).isOne();
+        assertThat(countRowsInTableWhere(FILMS, "vrijePlaatsen = 0 and id = " + id)).isOne();
+    }
+
+    @Test
+    void reserveerVoorOnbestaandeFilmMislukt() throws Exception {
+        var jsonData = Files.readString(TEST_RESOURCES.resolve("correcteReservatie.json"));
+        mockMvc.perform(post("/films/{id}/reservatie", Long.MAX_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void reserveerTeveelTicketsMislukt() throws Exception {
+        var id = findIdTestFilm1();
+        var jsonData = Files.readString(TEST_RESOURCES.resolve("reservatieMetTeveelTickets.json"));
+        mockMvc.perform(post("/films/{id}/reservatie", id)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(jsonData))
+                .andExpect(status().isConflict());
+    }
+    @ParameterizedTest
+    @ValueSource(strings = { "reservatieMetFoutiefEmailAdres.json", "reservatieMetNegatiefAantalTickets.json",
+    "reservatieZonderEmailAdres.json", "reservatieZonderTickets.json" })
+    void reserveerMetFoutieveDataMislukt(String fileName) throws Exception {
+        var jsonData = Files.readString(TEST_RESOURCES.resolve(fileName));
+        mockMvc.perform(post("/films/{id}/reservatie", findIdTestFilm1())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonData))
                 .andExpect(status().isBadRequest());

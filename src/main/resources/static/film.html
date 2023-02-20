@@ -30,8 +30,18 @@
             <input id="nieuweTitel" required>
         </label>
         <button id="wijzigTitel">Wijzig titel</button>
+        <label>Email adres:
+            <span id="emailAdresFout" class="fout" hidden>Verplicht</span>
+            <input id="emailAdres" required type="email">
+        </label>
+        <label>Aantal tickets:
+            <span id="aantalTicketsFout" class="fout" hidden>Verplicht</span>
+            <input id="aantalTickets" required type="number" min="1">
+        </label>
+        <button id="reserveer">Reserveer tickets</button>
     </div>
     <div id="nietGevonden" class="fout" hidden>Film niet gevonden.</div>
     <div id="storing" class="fout" hidden>Storing, contacteer helpdesk.</div>
+    <div id="conflict" class="fout" hidden></div>
 </body>
 </html>

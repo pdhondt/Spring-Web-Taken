@@ -1,11 +1,15 @@
 package be.vdab.cinefest.controllers;
 
 import be.vdab.cinefest.domain.Film;
+import be.vdab.cinefest.domain.Reservatie;
 import be.vdab.cinefest.dto.NieuweFilm;
 import be.vdab.cinefest.exceptions.FilmNietGevondenException;
 import be.vdab.cinefest.services.FilmService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.stream.Stream;
@@ -22,6 +26,7 @@ class FilmController {
         }
     }
     private record NieuweTitel(@NotBlank String titel) {}
+    private record NieuweReservatie(@NotNull @Email String emailAdres, @Positive int aantalTickets) {}
     @GetMapping("films/totaalvrijeplaatsen")
     long findTotaalVrijePlaatsen() {
         return filmService.findTotaalVrijePlaatsen();
@@ -56,5 +61,10 @@ class FilmController {
     void updateTitel(@PathVariable long id,
                      @RequestBody @Valid NieuweTitel nieuweTitel) {
         filmService.updateTitel(id, nieuweTitel.titel);
+    }
+    @PostMapping("films/{id}/reservatie")
+    long reserveer(@PathVariable long id,
+                   @RequestBody @Valid NieuweReservatie reservatie) {
+        return filmService.reserveer(new Reservatie(id, reservatie.emailAdres(), reservatie.aantalTickets()));
     }
 }

@@ -94,4 +94,27 @@ public class FilmRepository {
             throw new FilmNietGevondenException(id);
         }
     }
+    public Optional<Film> findAndLockById(long id) {
+        try {
+            var sql = """
+                    select id, titel, jaar, vrijePlaatsen, aankoopprijs
+                    from films
+                    where id = ?
+                    for update
+                    """;
+            return Optional.of(template.queryForObject(sql, filmMapper, id));
+        } catch (IncorrectResultSizeDataAccessException ex) {
+            return Optional.empty();
+        }
+    }
+    public void updateVrijePlaatsen(long id, int vrijePlaatsen) {
+        var sql = """
+                update films
+                set vrijePlaatsen = ?
+                where id = ?
+                """;
+        if (template.update(sql, vrijePlaatsen, id) == 0) {
+            throw new FilmNietGevondenException(id);
+        }
+    }
 }

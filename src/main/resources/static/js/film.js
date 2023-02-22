@@ -72,6 +72,8 @@ async function updateTitel(gewijzigdeTitel) {
         });
     if (response.ok) {
         setText("titel", gewijzigdeTitel.titel);
+    } else if (response.status === 400) {
+        toon("nieuweTitelFout");
     } else {
         toon("storing");
     }

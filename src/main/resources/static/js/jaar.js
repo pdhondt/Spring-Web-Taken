@@ -9,7 +9,7 @@ byId("zoek").onclick = async function () {
         jaarInput.focus();
         return;
     }
-    findByJaar(jaarInput.value);
+    await findByJaar(jaarInput.value);
 }
 
 function verbergFilmsEnFouten() {

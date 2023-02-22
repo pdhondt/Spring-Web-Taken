@@ -19,7 +19,7 @@ byId("toevoegen").onclick = async function () {
         titel: titelInput.value,
         jaar: jaarInput.value
     }
-    voegToe(film);
+    await voegToe(film);
 }
 
 function verbergFouten() {

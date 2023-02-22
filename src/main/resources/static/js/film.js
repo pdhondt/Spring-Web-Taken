@@ -5,7 +5,7 @@ byId("zoek").onclick = async function () {
     verbergFilmEnFouten();
     const zoekIdInput = byId("zoekId");
     if (zoekIdInput.checkValidity()) {
-        findById(zoekIdInput.value);
+        await findById(zoekIdInput.value);
     } else {
         toon("zoekIdFout");
         zoekIdInput.focus();
@@ -60,7 +60,7 @@ byId("wijzigTitel").onclick = async function () {
     const nieuweTitel = {
         titel: nieuweTitelInput.value
     }
-    updateTitel(nieuweTitel);
+    await updateTitel(nieuweTitel);
 }
 
 async function updateTitel(gewijzigdeTitel) {
@@ -98,7 +98,7 @@ byId("reserveer").onclick = async function () {
         "emailAdres": emailAdresInput.value,
         "aantalTickets": aantalTicketsInput.value
     }
-    reserveer(nieuweReservatie);
+    await reserveer(nieuweReservatie);
 }
 
 async function reserveer(reservatie) {
